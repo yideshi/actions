@@ -1,0 +1,59 @@
+name: 'Home Assistant helper: info'
+description: 'GitHub action helper: info'
+inputs:
+  path:
+    description: The relative dir path to where the type files are
+    required: false
+    default: '.'
+outputs:
+  architectures:
+    description: Returns the supported architectures
+    value: ${{ steps.info.outputs.architectures }}
+  image:
+    description: Returns the image defined in the config file for add-ons if any
+    value: ${{ steps.info.outputs.image }}
+  version:
+    description: Returns the version defined in the config file for add-ons if any
+    value: ${{ steps.info.outputs.version }}
+runs:
+  using: "composite"
+  steps: 
+    - shell: bash
+      id: info
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        INPUTS_PATH: ${{ inputs.path }}
+      run: |
+        archs=[]
+        image=""
+        version=""
+
+        mkdir -p "$ACTION_PATH/bin"
+        wget -q -O "$ACTION_PATH/bin/yq" https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        chmod a+x "$ACTION_PATH/bin/yq"
+        echo "$ACTION_PATH/bin" >> "$GITHUB_PATH"
+
+        for file_type in json yml yaml; do
+          if [[ -f "$INPUTS_PATH/build.${file_type}" ]]; then
+            archs=$(yq e -N -M '.build_from | keys' -o=json -I=0 "$INPUTS_PATH/build.${file_type}")
+            break
+          elif [[ -f "$INPUTS_PATH/config.${file_type}" ]]; then
+            archs=$(yq e -N -M '.arch' -o=json -I=0 "$INPUTS_PATH/config.${file_type}")
+            break
+          fi
+        done
+
+        for file_type in json yml yaml; do
+          if [[ -f "$INPUTS_PATH/config.${file_type}" ]]; then
+            image=$(yq e -N -M '.image' -o=json -I=0 "$INPUTS_PATH/config.${file_type}")
+            version=$(yq e -N -M '.version' -o=json -I=0 "$INPUTS_PATH/config.${file_type}")
+          fi
+        done
+
+        echo "Architectures: $archs"
+        echo "Image: $image"
+        echo "Version: $version"
+
+        echo "architectures=$archs" >> "$GITHUB_OUTPUT"
+        echo "image=$image" >> "$GITHUB_OUTPUT"
+        echo "version=$version" >> "$GITHUB_OUTPUT"

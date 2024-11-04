@@ -1,0 +1,27 @@
+name: 'Home Assistant helper: git-init'
+description: 'GitHub action helper: git-init'
+inputs:
+  name:
+    required: true
+    default: 'yideshi'
+  email:
+    required: true
+    default: '10000@tiyicn.cn'
+  token:
+    required: true
+runs:
+  using: "composite"
+  steps: 
+    - shell: bash
+      env:
+        INPUTS_NAME: ${{ inputs.name }}
+        INPUTS_EMAIL: ${{ inputs.email }}
+        INPUTS_TOKEN: ${{ inputs.token }}
+      run: |
+        git config --global user.name "$INPUTS_NAME"
+        git config --global user.email "$INPUTS_EMAIL"
+
+        if [[ ! -z "$INPUTS_TOKEN" ]]; then
+          git config --global credential.helper store
+          echo "https://$INPUTS_TOKEN:x-oauth-basic@github.com" > $HOME/.git-credentials
+        fi

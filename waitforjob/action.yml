@@ -1,0 +1,55 @@
+name: 'waitforjob'
+description: 'Wait for a job to finish'
+inputs:
+  job:
+    description: 'The ID of the job to wait for'
+    required: true
+  timeout:
+    description: 'number of seconds to wait between retries'
+    required: false
+    default: 10
+  retry-limit:
+    description: 'number of maximum retries'
+    required: false
+    default: 100
+  github-token:
+    description: The GitHub token used to create an authenticated client
+    default: ${{ github.token }}
+    required: false
+runs:
+  using: "composite"
+  steps: 
+    - shell: bash
+      env:
+        INPUTS_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUTS_JOB: ${{ inputs.job }}
+        INPUTS_RETRY_LIMIT: ${{ inputs.retry-limit }}
+        INPUTS_TIMEOUT: ${{ inputs.timeout }}
+        REPOSITORY: ${{github.repository}}
+        SHA: ${{github.sha}}
+      run: |
+        retries=1
+        conclusion="";
+        status="";
+
+        while true; do
+          result=$(curl -sSL -f -H "Authorization: token $INPUTS_GITHUB_TOKEN" "https://api.github.com/repos/$REPOSITORY/commits/$SHA/check-runs" | jq --arg test $INPUTS_JOB '[.check_runs | .[] |select(.name | contains($test))][0]')
+          conclusion=$(echo $result | jq -r .conclusion)
+          status=$(echo $result | jq -r .status)
+          echo
+          echo "Try: $retries/$INPUTS_RETRY_LIMIT"
+          echo "Status: $status"
+          echo "Conclusion: $conclusion"
+
+          if [ "$status" == "completed" ] || [ "$retries" == "$INPUTS_RETRY_LIMIT" ]; then
+            break
+          else
+            echo "Sleeping for $INPUTS_TIMEOUTs"
+            sleep $INPUTS_TIMEOUT
+            retries=$(( $retries + 1 ))
+          fi
+        done
+
+        if [ "$conclusion" != "success" ]; then
+          exit 1
+        fi
