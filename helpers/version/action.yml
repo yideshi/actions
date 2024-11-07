@@ -92,7 +92,7 @@ runs:
       run: |
         if [[ "$INPUTS_TYPE" == "supervisor" ]]; then
           sed -i "s/^SUPERVISOR_VERSION =.*/SUPERVISOR_VERSION = \"${{ steps.version.outputs.version }}\"/g" supervisor/const.py
-          sed -i "s/^URL_HASSIO_APPARMOR =.*/URL_HASSIO_APPARMOR = \"gitee.com/smart-assistant/version\"/g" supervisor/const.py
+          sed -i "s/^URL_HASSIO_APPARMOR =.*/URL_HASSIO_APPARMOR = \"https://gitee.com/smart-assistant/version\"/g" supervisor/const.py
         fi
 
     - shell: bash
