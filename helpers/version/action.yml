@@ -112,6 +112,7 @@ runs:
                 \ ) \
                 \ image = original_image \
                 ' supervisor/docker/interface.py
+          cat supervisor/docker/interface.py
         fi
 
     - shell: bash
