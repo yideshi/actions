@@ -23,7 +23,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: yideshi/actions/helpers/cas@master
+    - uses: ${{ github.repository_owner }}/actions/helpers/cas@master
       with:
         version: ${{ inputs.version }}
 

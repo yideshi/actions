@@ -93,9 +93,8 @@ runs:
         if [[ "$INPUTS_TYPE" == "supervisor" ]]; then
           sed -i "s/^SUPERVISOR_VERSION =.*/SUPERVISOR_VERSION = \"${{ steps.version.outputs.version }}\"/g" supervisor/const.py
           sed -i "s@"version.tiyicn.cn"@"gitee.com/smart-assistant/version"@g" supervisor/const.py
-          sed -i '/_LOGGER.info("Downloading docker image %s with tag %s.", image, version)/a\        source: bool = False\n        original_image = image\n\n        if "ghcr.io" in image:\n            source: bool = True\n            image = image.replace("ghcr.io", "ghcr.nju.edu.cn")\n            if "-hassio-supervisor" in image:\n                \image = image.replace("home-assistant", "yideshi")' supervisor/docker/interface.py
+          sed -i '/_LOGGER.info("Downloading docker image %s with tag %s.", image, version)/a\        source: bool = False\n        original_image = image\n\n        if "ghcr.io" in image:\n            source: bool = True\n            image = image.replace("ghcr.io", "ghcr.nju.edu.cn")\n            if "-hassio-supervisor" in image:\n                \image = image.replace("home-assistant", \"${{ github.repository_owner }}\")' supervisor/docker/interface.py
           sed -i '/# Validate content/i\            if source:\n                await self.sys_run_in_executor(\n                    docker_image.tag, original_image, tag=version\n                )\n                await self.sys_run_in_executor(\n                    self.sys_docker.remove_image, image, version\n                )\n                image = original_image' supervisor/docker/interface.py
-          echo "Organization Name: ${{ github.repository_owner }}"
         fi
 
     - shell: bash
