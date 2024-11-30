@@ -92,13 +92,6 @@ runs:
       run: |
         if [[ "$INPUTS_TYPE" == "supervisor" ]]; then
           sed -i "s/^SUPERVISOR_VERSION =.*/SUPERVISOR_VERSION = \"${{ steps.version.outputs.version }}\"/g" supervisor/const.py
-          sed -i "s/^URL_HASSIO_ADDONS =.*/URL_HASSIO_ADDONS = "https://gitee.com/smart-assistant/actions"/g" supervisor/const.py
-          sed -i "s@"version.tiyicn.cn"@"gitee.com/smart-assistant/version/raw/main"@g" supervisor/const.py
-          sed -i '/_LOGGER.info("Downloading docker image %s with tag %s.", image, version)/a\        source: bool = False\n        original_image = image\n\n        if "ghcr.io" in image:\n            source: bool = True\n            image = image.replace("ghcr.io", "ghcr.nju.edu.cn")\n            if "-hassio-supervisor" in image:\n                \image = image.replace("home-assistant", \"${{ github.repository_owner }}\")' supervisor/docker/interface.py
-          sed -i '/# Validate content/i\            if source:\n                await self.sys_run_in_executor(\n                    docker_image.tag, original_image, tag=version\n                )\n                await self.sys_run_in_executor(\n                    self.sys_docker.remove_image, image, version\n                )\n                image = original_image' supervisor/docker/interface.py
-          sed -i "s/^URL_COMMUNITY_ADDONS =.*/URL_COMMUNITY_ADDONS = "https://gitee.com/smart-assistant/repository"/g" supervisor/store/validate.py
-          sed -i "s/^URL_ESPHOME =.*/URL_ESPHOME = "https://gitee.com/smart-assistant/esphome"/g" supervisor/store/validate.py
-          sed -i "s/^URL_MUSIC_ASSISTANT =.*/URL_MUSIC_ASSISTANT = "https://gitee.com/smart-assistant/music-assistant"/g" supervisor/store/validate.py
         fi
 
     - shell: bash
